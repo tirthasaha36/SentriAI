@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "sentri-server",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Sentri API — medicine safety, document decoding, lab trends, consultation scribe",
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

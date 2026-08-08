@@ -1,136 +1,156 @@
-# SentriAI — Contactless AI Health Triage Kiosk
+# Sentri — Health Records, Decoded
 
-<p align="center">
-  <strong>Scan → Speak → Triage</strong><br/>
-  A contactless, full-stack health triage prototype powered by computer vision, voice AI, and clinical LLM reasoning.
-</p>
+Four tools for the parts of healthcare that actually block people: understanding
+the paperwork, catching medication conflicts, seeing where your numbers are
+heading, and getting the consultation written down.
 
----
-
-## 🏗 System Architecture
-
-```text
-ai-health-kiosk/
-├── client/                  # React + Vite frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Sidebar.jsx          # Persistent navigation panel
-│   │   │   ├── WelcomeScreen.jsx    # Dashboard landing page
-│   │   │   ├── VitalsScan.jsx       # rPPG camera + MediaPipe face detection
-│   │   │   ├── SymptomIntake.jsx    # Voice/text symptom capture
-│   │   │   ├── TriageResult.jsx     # AI triage output with explainability
-│   │   │   ├── HistoryView.jsx      # Session timeline + trend graphs
-│   │   │   ├── ReportsView.jsx      # Exportable reports (Patient & Clinical view)
-│   │   │   ├── InsightsView.jsx     # AI-driven preventive health analytics
-│   │   │   ├── SettingsView.jsx     # Profile, privacy, accessibility controls
-│   │   │   └── AboutView.jsx        # Technical pipeline + disclaimers
-│   │   ├── utils/
-│   │   │   ├── signalProcessing.js  # FFT, bandpass filter, HR/BR estimation
-│   │   │   └── llm.js               # Client-side LLM utilities
-│   │   └── api.js                   # Backend API integration layer
-│   └── tailwind.config.js           # Custom dark theme tokens
-├── server/                  # Node.js + Express backend
-│   ├── routes/
-│   │   ├── session.js               # Session lifecycle management
-│   │   ├── triage.js                # LLM triage orchestration endpoint
-│   │   └── facilities.js            # Nearby facility lookup
-│   └── services/
-│       ├── llm.js                   # Groq LLaMA-3 70B integration
-│       └── sessionStore.js          # In-memory session store
-```
-
-### 🧠 Core Technologies
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | React 18, Vite, Tailwind CSS v3 | Responsive dark-themed dashboard UI |
-| **Computer Vision** | MediaPipe FaceLandmarker | Browser-side face detection & ROI extraction |
-| **Signal Processing** | Custom FFT (Cooley-Tukey) | Heart rate & breathing rate estimation from rPPG |
-| **LLM Triage** | LLaMA 3.3 70B via Groq | ESI-style clinical urgency classification |
-| **Backend** | Node.js, Express | Session management & API orchestration |
+**Sentri does not diagnose.** Every feature takes information that already exists —
+a drug label, a discharge summary, your own lab history, what your doctor just
+said — and makes it usable. That is a deliberate design choice: diagnosis is the
+most regulated, hardest-to-validate, least differentiated thing software can
+attempt, and it is not where people are actually stuck.
 
 ---
 
-## ✨ Features
+## The four features
 
-### Core Pipeline
-1. **Contactless Vitals Extraction (rPPG)**
-   - MediaPipe FaceLandmarker identifies the forehead ROI in real-time
-   - Extracts green-channel intensity variations to derive the cardiac pulse signal
-   - Calculates Heart Rate (BPM), Breathing Rate, and HRV stress via FFT spectral analysis
+### 1. Medicine Safety Check
+A patient seeing a cardiologist, a diabetologist and a GP gets three prescriptions
+from three people who never compare notes. This catches what falls through:
 
-2. **Voice / Text Symptom Intake**
-   - Captures patient-described symptoms via Web Speech API or manual text entry
-   - Feeds unstructured natural language into the triage engine
+- **Drug interactions**, quoted from the manufacturer's own FDA label text.
+- **Duplicate therapy** — the same molecule taken twice under different names.
+  `Tylenol` and `acetaminophen` resolve to the same ingredient and get flagged.
+- **OCR-damaged names still resolve.** RxNorm's approximate matching turns
+  `warfarn sodum` into warfarin sodium.
 
-3. **Agentic LLM Triage**
-   - Fuses vitals + symptoms into a structured ESI-style assessment
-   - Classifies urgency: **Emergency** · **Urgent** · **Routine**
-   - Provides plain-language reasoning and concrete next steps
-   - Explainability panel ("Why this result?") with key contributing factors
+Every interaction shown must carry a verbatim quote that is *verified present* in
+the supplied label text and is not boilerplate. Anything the model asserts without
+that evidence is discarded before it reaches the screen.
 
-### Advanced Capabilities (New)
-1. **Live Multi-Modal Fusion Visualization**
-   - After the vitals scan, the AI performs a **preliminary triage** (vitals only) to establish a baseline confidence level.
-   - Once symptoms are submitted, the UI animates a **live fusion transition**, showing exactly how the AI's urgency classification and confidence score evolved when combining the multimodal signals (vitals + voice).
+### 2. Decode a Prescription or Discharge Summary
+`Tab Furosemide 40mg PO BD x 14 days` is not something a patient can act on.
+Paste or photograph the document and get it back in plain language, in **English,
+Hindi, Bengali, Marathi, Tamil, Telugu or Spanish** — with drug names left in Latin
+script so they still match the box.
 
-2. **Outbreak / Pattern Detection Dashboard**
-   - A population-level staff dashboard that aggregates anonymized triage sessions.
-   - Continuously extracts symptom keywords (e.g., fever, cough) and detects temporal clusters.
-   - Automatically flags localized "Pattern Alerts" when multiple patients report overlapping symptoms within a 24-hour window, providing an early-warning signal for potential outbreaks.
+The output leads with **warning signs**: what should send you straight back to a
+doctor. That is the most consequential part of a discharge summary and the part
+patients most often miss.
 
-### Dashboard Views
-| View | Description |
-|------|-------------|
-| **Home** | Landing page with hero section, "How It Works" pipeline, and session launcher |
-| **History** | Chronological session timeline with HR trend graphs, expandable session details, urgency badges, and "Compare to last visit" deltas |
-| **Reports** | Exportable health summaries with **Patient View** (plain language) and **Clinical View** (structured data table with ESI levels). Download PDF & Generate QR Code for clinical intake |
-| **Insights** | AI-driven preventive analytics — health score, risk pattern detection, cardiovascular recovery trends, and personalized recommendations |
-| **Settings** | Patient profiles & dependents, language preferences, notification controls, emergency auto-alert consent, data export/wipe, accessibility toggles |
-| **About** | Technical pipeline explanation (rPPG + LLM), formal medical disclaimer, data privacy statement, and project credits |
+### 3. Lab Report Trends
+One report is a snapshot. The signal is the direction of travel.
+
+Add reports over time and Sentri normalises units across labs (mmol/L → mg/dL, and
+similar), then computes the trajectory of each marker. It flags values that are
+**still inside the normal range but drifting toward a bound** — the thing no single
+report can ever show you.
+
+> Example: fasting glucose of 88 → 97 → 105 mg/dL reads "normal" every single time.
+> Sentri reports it as rising 19.3% and projected to leave the range in ~222 days.
+
+### 4. Consultation Scribe
+Clinicians spend roughly two hours documenting for every hour of care. Record the
+consultation, get a structured subjective/objective/assessment/plan note, the
+medications and follow-up mentioned — plus a **plain-language version for the
+patient**, so they leave with something they understand.
+
+It also emits an **uncertainties** list. Transcription mishears drug names and
+numbers above all else, so the model is required to flag those rather than quietly
+correct them.
 
 ---
 
-## 🚀 Getting Started
+## Where the data comes from
 
-### 1. Backend Setup
+| Source | Used for | Key needed |
+|---|---|---|
+| [RxNorm](https://rxnav.nlm.nih.gov/) (US NLM) | Normalising drug names, ingredient resolution | No |
+| [openFDA](https://open.fda.gov/) drug labels | Interaction text | No |
+| Groq `llama-3.3-70b-versatile` | Parsing, explanation, translation | Yes |
+| Groq `whisper-large-v3` | Consultation transcription | Yes |
+| Tesseract.js | OCR, runs in your browser | No |
+
+RxNav's own drug-interaction API was retired in 2024 and now 404s, which is why
+interaction text is drawn from openFDA label records instead.
+
+## What is model output and what is not
+
+This split is the point, so it is worth being explicit:
+
+| Computed in code (reproducible) | Generated by a model |
+|---|---|
+| Duplicate therapy (exact ingredient match) | Plain-language explanations |
+| Quote verification against source text | Parsing messy text into structured data |
+| Unit conversion | Translation |
+| Trend slope, % change, range-crossing projection | Narrative summaries |
+
+Anything a wrong answer would make dangerous is arithmetic or exact matching. The
+model reads and explains; it does not decide.
+
+---
+
+## Running it
+
+Requires Node 18+ (uses global `fetch`). Tested on Node 22.
+
 ```bash
+# 1. Backend
 cd server
 npm install
-```
+cp ../.env.example .env      # then add your GROQ_API_KEY
+npm start                    # http://localhost:3001
 
-Create a `.env` file in the `server/` directory:
-```env
-PORT=3001
-GROQ_API_KEY=gsk_your_api_key_here
-```
-> Get a free Groq API key at [console.groq.com/keys](https://console.groq.com/keys)
-
-Start the backend:
-```bash
-node index.js
-```
-
-### 2. Frontend Setup
-In a new terminal:
-```bash
+# 2. Frontend, in a second terminal
 cd client
 npm install
-npm run dev
+npm run dev                  # http://localhost:5173
 ```
 
-Open **http://localhost:5173** to launch SentriAI.
+Get a free Groq key at [console.groq.com](https://console.groq.com).
 
----
+Environment variables (all server-side, see `.env.example`):
 
-## 🔒 Privacy & Data
+| Variable | Default | Purpose |
+|---|---|---|
+| `PORT` | `3001` | API port |
+| `GROQ_API_KEY` | — | Required. AI endpoints return 503 without it. |
+| `GROQ_TEXT_MODEL` | `llama-3.3-70b-versatile` | Text model |
+| `GROQ_AUDIO_MODEL` | `whisper-large-v3` | Transcription model |
 
-- **Video streams** are processed entirely in-browser via MediaPipe — never recorded or transmitted
-- **Symptom transcripts** are sent to Groq's LLM endpoint over TLS and are not permanently logged
-- **Session data** is stored in-memory on the server and is cleared on restart
-- All health data operations comply with a privacy-first, minimal-retention architecture
+The client reads `VITE_API_BASE` if you need to point it somewhere other than
+`http://localhost:3001/api`.
 
----
+## API
 
-## ⚠️ Disclaimer
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/health` | Status and configured models |
+| `POST /api/medicines/resolve` | Messy names → RxNorm identities |
+| `POST /api/medicines/interactions` | Grounded interaction + duplicate check |
+| `POST /api/decode` | Document → plain language, chosen language |
+| `GET /api/decode/languages` | Supported languages |
+| `POST /api/labs/parse` | Report text → structured markers |
+| `POST /api/labs/trends` | Markers over time → computed trends |
+| `POST /api/scribe/transcribe` | Audio (multipart) → transcript |
+| `POST /api/scribe/note` | Transcript → structured note |
 
-**SentriAI is a decision-support prototype built for demonstration and hackathon purposes. It is NOT a certified medical device and must not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider in emergency situations.**
+## Privacy
+
+There is no database and no accounts. Images are OCR'd in your browser and never
+uploaded. Audio is held in memory only for the duration of transcription and is
+never written to disk. Lab reports persist in your browser's `localStorage` and
+nowhere else. Clearing site data deletes everything.
+
+## Limits — please read
+
+- **Not a medical device, and not a diagnosis.** Decision support only.
+- **OCR fails on handwriting.** Extracted text is always editable before use.
+- **Interaction coverage is bounded by what openFDA labels contain.** "No
+  interactions found" means nothing was flagged in the labels checked — not that a
+  combination is safe.
+- **Reference ranges vary between laboratories.** A value flagged here may be
+  normal at a different lab.
+- **Scribe output is a draft.** A clinician must read and correct it before it
+  enters any record.
+- In an emergency, do not use this. Call your local emergency number.
