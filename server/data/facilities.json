@@ -1,0 +1,52 @@
+[
+  {
+    "id": "f1",
+    "name": "General Hospital ER",
+    "type": "Emergency Room",
+    "distance_miles": 2.4,
+    "address": "100 Medical Center Blvd",
+    "phone": "(555) 123-4567",
+    "hours": "Open 24/7",
+    "accepted_tiers": ["Emergency", "Urgent"]
+  },
+  {
+    "id": "f2",
+    "name": "City Medical Center",
+    "type": "Emergency Room",
+    "distance_miles": 5.1,
+    "address": "450 Health Way",
+    "phone": "(555) 234-5678",
+    "hours": "Open 24/7",
+    "accepted_tiers": ["Emergency", "Urgent"]
+  },
+  {
+    "id": "f3",
+    "name": "QuickCare Urgent Care",
+    "type": "Urgent Care",
+    "distance_miles": 1.2,
+    "address": "200 Main St, Suite A",
+    "phone": "(555) 345-6789",
+    "hours": "8:00 AM - 8:00 PM",
+    "accepted_tiers": ["Urgent", "Routine"]
+  },
+  {
+    "id": "f4",
+    "name": "Neighborhood Clinic",
+    "type": "Primary Care",
+    "distance_miles": 0.8,
+    "address": "50 Community Dr",
+    "phone": "(555) 456-7890",
+    "hours": "9:00 AM - 5:00 PM",
+    "accepted_tiers": ["Routine"]
+  },
+  {
+    "id": "f5",
+    "name": "Express Care Walk-in",
+    "type": "Urgent Care",
+    "distance_miles": 3.5,
+    "address": "300 Highway 1",
+    "phone": "(555) 567-8901",
+    "hours": "7:00 AM - 10:00 PM",
+    "accepted_tiers": ["Urgent", "Routine"]
+  }
+]
