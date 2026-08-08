@@ -28,6 +28,7 @@ export const checkInteractions = (drugs) => postJSON('/medicines/interactions', 
 // --- Feature 2: prescription / discharge decoder ---
 export const decodeDocument = (text, language) =>
   postJSON('/decode', { text, language });
+export const getLanguages = () => getJSON('/decode/languages');
 
 // --- Feature 3: lab trends ---
 export const parseLabReport = (text, reportDate) =>
