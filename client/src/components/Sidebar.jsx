@@ -1,7 +1,8 @@
 import React from 'react';
-import { Pill, FileText, LineChart, Mic, Info, ShieldPlus } from 'lucide-react';
+import { LayoutDashboard, Pill, FileText, LineChart, Mic, Info, ShieldPlus } from 'lucide-react';
 
 export const TABS = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'medicines', label: 'Medicine Safety', icon: Pill },
   { id: 'decode', label: 'Decode Document', icon: FileText },
   { id: 'labs', label: 'Lab Trends', icon: LineChart },
@@ -18,12 +19,15 @@ const Sidebar = ({ currentTab, setTab }) => {
 
   return (
     <aside className="w-64 bg-navy-850 h-screen flex flex-col border-r border-slate-800/50 flex-shrink-0 z-20">
-      <div className="p-8 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl overflow-hidden border border-mint/20 flex items-center justify-center bg-mint/5 relative">
+      <div 
+        onClick={() => setTab('dashboard')} 
+        className="p-8 flex items-center gap-3 cursor-pointer group"
+      >
+        <div className="w-10 h-10 rounded-xl overflow-hidden border border-mint/20 flex items-center justify-center bg-mint/5 relative group-hover:border-mint/60 transition-colors">
           <img src="/logo.png" alt="Sentri Logo" className="w-full h-full object-cover" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white leading-none">Sentri</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white leading-none group-hover:text-mint transition-colors">Sentri</h1>
           <p className="text-mint text-[10px] uppercase font-bold tracking-widest mt-1">Health Records, Decoded</p>
         </div>
       </div>
