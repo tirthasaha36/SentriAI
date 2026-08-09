@@ -32,9 +32,13 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Sentri API running on http://localhost:${PORT}`);
-  if (!process.env.GROQ_API_KEY) {
-    console.warn('WARNING: GROQ_API_KEY is not set — AI endpoints will return 503.');
-  }
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Sentri API running on http://localhost:${PORT}`);
+    if (!process.env.GROQ_API_KEY) {
+      console.warn('WARNING: GROQ_API_KEY is not set — AI endpoints will return 503.');
+    }
+  });
+}
+
+module.exports = app;
