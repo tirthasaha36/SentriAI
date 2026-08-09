@@ -112,8 +112,8 @@ const Scribe = () => {
         subtitle="Clinicians spend roughly two hours on documentation for every hour of patient care, and it is the leading driver of burnout. Record the consultation, get a structured note — and a plain-language version for the patient."
       />
 
-      <div className="grid lg:grid-cols-2 gap-6 items-start">
-        <div className="space-y-4">
+      <div className="space-y-6">
+        <div className={transcript ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-4"}>
           <Card>
             <h3 className="text-white font-bold mb-4 text-sm flex items-center gap-2">
               <Mic className="w-4 h-4 text-mint" /> Record the consultation
@@ -148,9 +148,6 @@ const Scribe = () => {
             </p>
           </Card>
 
-          {busy === 'transcribe' && <Card><Spinner label="Transcribing with Whisper…" /></Card>}
-          <ErrorNote error={error} />
-
           {transcript && (
             <Card>
               <h3 className="text-white font-bold mb-2 text-sm flex items-center gap-2">
@@ -170,86 +167,91 @@ const Scribe = () => {
           )}
         </div>
 
-        <div className="space-y-4">
-          {busy === 'note' && <Card><Spinner label="Structuring the consultation…" /></Card>}
+        {busy === 'transcribe' && <Card><Spinner label="Transcribing with Whisper…" /></Card>}
+        <ErrorNote error={error} />
 
-          {note && (
-            <>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setView('clinician')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
-                    view === 'clinician' ? 'bg-mint/15 text-mint border border-mint/40' : 'text-slate-400 border border-slate-700'
-                  }`}
-                >
-                  <Stethoscope className="w-3.5 h-3.5" /> Clinician note
-                </button>
-                <button
-                  onClick={() => setView('patient')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
-                    view === 'patient' ? 'bg-mint/15 text-mint border border-mint/40' : 'text-slate-400 border border-slate-700'
-                  }`}
-                >
-                  <User className="w-3.5 h-3.5" /> For the patient
-                </button>
-                <button onClick={copyNote} className="ml-auto flex items-center gap-1.5 text-xs text-slate-400 hover:text-mint">
-                  {copied ? <Check className="w-3.5 h-3.5 text-routine" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? 'Copied' : 'Copy note'}
-                </button>
-              </div>
+        {(busy === 'note' || note) && (
+          <div className="space-y-4 border-t border-slate-800 pt-6">
+            {busy === 'note' && <Card><Spinner label="Structuring the consultation…" /></Card>}
 
-              {note.uncertainties?.length > 0 && (
-                <Card className="border-urgent/50">
-                  <h4 className="text-amber-200 font-bold text-sm mb-2 flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4" /> Check these before signing
-                  </h4>
-                  <ul className="text-sm text-amber-100/80 list-disc pl-5 space-y-1">
-                    {note.uncertainties.map((u, i) => <li key={i}>{u}</li>)}
-                  </ul>
-                </Card>
-              )}
+            {note && (
+              <>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setView('clinician')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
+                      view === 'clinician' ? 'bg-mint/15 text-mint border border-mint/40' : 'text-slate-400 border border-slate-700'
+                    }`}
+                  >
+                    <Stethoscope className="w-3.5 h-3.5" /> Clinician note
+                  </button>
+                  <button
+                    onClick={() => setView('patient')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
+                      view === 'patient' ? 'bg-mint/15 text-mint border border-mint/40' : 'text-slate-400 border border-slate-700'
+                    }`}
+                  >
+                    <User className="w-3.5 h-3.5" /> For the patient
+                  </button>
+                  <button onClick={copyNote} className="ml-auto flex items-center gap-1.5 text-xs text-slate-400 hover:text-mint">
+                    {copied ? <Check className="w-3.5 h-3.5 text-routine" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? 'Copied' : 'Copy note'}
+                  </button>
+                </div>
 
-              <Card>
-                {view === 'clinician' ? (
-                  <>
-                    <NoteField label="Chief complaint" value={note.chief_complaint} />
-                    <NoteField label="Subjective" value={note.subjective} />
-                    <NoteField label="Objective" value={note.objective} />
-                    <NoteField label="Assessment" value={note.assessment} />
-                    <NoteField label="Plan" value={note.plan} />
-
-                    {note.medications_mentioned?.length > 0 && (
-                      <div className="mb-4">
-                        <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Medications</div>
-                        {note.medications_mentioned.map((m, i) => (
-                          <div key={i} className="text-sm text-slate-200">
-                            <span className="text-white font-semibold">{m.name}</span>
-                            {m.dose && <span className="text-mint"> {m.dose}</span>}
-                            {m.instructions && <span className="text-slate-400"> — {m.instructions}</span>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {note.follow_up?.length > 0 && (
-                      <div>
-                        <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Follow-up</div>
-                        <ul className="text-sm text-slate-200 list-disc pl-5 space-y-1">
-                          {note.follow_up.map((f, i) => <li key={i}>{f}</li>)}
-                        </ul>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">What we discussed</div>
-                    <p className="text-sm text-slate-200 leading-relaxed">{note.patient_summary}</p>
-                  </>
+                {note.uncertainties?.length > 0 && (
+                  <Card className="border-urgent/50">
+                    <h4 className="text-amber-200 font-bold text-sm mb-2 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" /> Check these before signing
+                    </h4>
+                    <ul className="text-sm text-amber-100/80 list-disc pl-5 space-y-1">
+                      {note.uncertainties.map((u, i) => <li key={i}>{u}</li>)}
+                    </ul>
+                  </Card>
                 )}
-              </Card>
-            </>
-          )}
-        </div>
+
+                <Card>
+                  {view === 'clinician' ? (
+                    <>
+                      <NoteField label="Chief complaint" value={note.chief_complaint} />
+                      <NoteField label="Subjective" value={note.subjective} />
+                      <NoteField label="Objective" value={note.objective} />
+                      <NoteField label="Assessment" value={note.assessment} />
+                      <NoteField label="Plan" value={note.plan} />
+
+                      {note.medications_mentioned?.length > 0 && (
+                        <div className="mb-4">
+                          <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Medications</div>
+                          {note.medications_mentioned.map((m, i) => (
+                            <div key={i} className="text-sm text-slate-200">
+                              <span className="text-white font-semibold">{m.name}</span>
+                              {m.dose && <span className="text-mint"> {m.dose}</span>}
+                              {m.instructions && <span className="text-slate-400"> — {m.instructions}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {note.follow_up?.length > 0 && (
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Follow-up</div>
+                          <ul className="text-sm text-slate-200 list-disc pl-5 space-y-1">
+                            {note.follow_up.map((f, i) => <li key={i}>{f}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">What we discussed</div>
+                      <p className="text-sm text-slate-200 leading-relaxed">{note.patient_summary}</p>
+                    </>
+                  )}
+                </Card>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <Disclaimer>

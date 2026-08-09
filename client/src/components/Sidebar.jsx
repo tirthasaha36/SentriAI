@@ -19,9 +19,8 @@ const Sidebar = ({ currentTab, setTab }) => {
   return (
     <aside className="w-64 bg-navy-850 h-screen flex flex-col border-r border-slate-800/50 flex-shrink-0 z-20">
       <div className="p-8 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full border border-mint flex items-center justify-center bg-mint/5 relative">
-          <ShieldPlus className="w-5 h-5 text-mint" />
-          <div className="absolute inset-0 rounded-full shadow-glow-mint mix-blend-screen opacity-50"></div>
+        <div className="w-10 h-10 rounded-xl overflow-hidden border border-mint/20 flex items-center justify-center bg-mint/5 relative">
+          <img src="/logo.png" alt="Sentri Logo" className="w-full h-full object-cover" />
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white leading-none">Sentri</h1>
